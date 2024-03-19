@@ -4,13 +4,13 @@ import bcrypt from "bcrypt";
 import { TRPCError, initTRPC } from "@trpc/server";
 import superjson from "superjson";
 import { z } from "zod";
-import userModel, { IUser } from "../model/user.model";
-import connectRedis, { redisClient } from "../database/redis";
+import userModel, { IUser } from "./model/user.model";
+import connectRedis, { redisClient } from "./database/redis";
 import * as crypto from "node:crypto";
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
-import connectMongoose from "../database/mongoose";
+import connectMongoose from "./database/mongoose";
 import type { MongoServerError } from "mongodb";
-import shortModel from "../model/short.model";
+import shortModel from "./model/short.model";
 import { IShortOutput } from "./type";
 
 export const createContext = async (opts: FetchCreateContextFnOptions) => {
@@ -95,18 +95,21 @@ export const appRouter = t.router({
 
     return short as unknown as IShortOutput;
   }),
-  getHistory: protectedProcedure.query(async (opts) => {
-    const user_id = opts.ctx.user?._id;
-    const Short = shortModel();
-    const data = await Short.find({ user: user_id })
-      .limit(21)
-      .sort("-createdAt");
+  getHistory: protectedProcedure
+    .input(z.object({ cursor: z.number().nullish() }))
+    .query(async (opts) => {
+      const user_id = opts.ctx.user?._id;
+      const Short = shortModel();
+      const data = await Short.find({ user: user_id })
+        .skip(opts.input.cursor || 0)
+        .limit(21)
+        .sort("-createdAt");
 
-    const hasMore = data.length > 20;
-    const shorts = data.slice(0, 20) as unknown as IShortOutput[];
+      const hasMore = data.length > 20;
+      const shorts = data.slice(0, 20) as unknown as IShortOutput[];
 
-    return { hasMore, shorts };
-  }),
+      return { hasMore, shorts };
+    }),
   checkEmailRegistered: publicProcedure
     .input(z.string())
     .mutation(async (opts) => {
@@ -280,7 +283,6 @@ export const appRouter = t.router({
     )
     .mutation(async (opts) => {
       const Short = shortModel();
-      console.log("opts.input", opts.input);
       const { _id, link, alias } = opts.input;
       const user = opts.ctx.user;
 

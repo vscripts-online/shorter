@@ -1,4 +1,4 @@
-import { IShortOutput } from "@/app/api/trpc/type";
+import { IShortOutput } from "@/server/type";
 import { ShortContext } from "@/app/providers/short.context";
 import { ArrowLeftFromLine } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -21,7 +21,7 @@ export default function CurrentUpdatingShort(props: Props) {
   return (
     <div className="mt-20 flex flex-col justify-center items-center ">
       <div
-        className="flex gap-2 p-2.5 mb-3 cursor-pointer border border-transparent rounded-full hover:bg-gray-50 hover:border-gray-400"
+        className="flex gap-2 px-3 mb-3 cursor-pointer border-b-2 border-transparent hover:border-b-2 hover:border-black"
         onClick={handleClick}
       >
         <ArrowLeftFromLine /> Go Back

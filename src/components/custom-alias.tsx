@@ -8,28 +8,28 @@ interface Props {
 }
 
 export default function CustomAlias(props: Props) {
-  const { alias, setAlias } = useContext(ShortContext);
+  const { alias, setAlias, aliasError, setAliasError } =
+    useContext(ShortContext);
 
-  const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [value] = useDebounce(alias, 300);
 
   const mutation = trpc.availableSlug.useMutation();
 
   useEffect(() => {
-    if ((error || success) && alias === "") {
+    if ((aliasError || success) && alias === "") {
       setSuccess("");
-      setError("");
+      setAliasError("");
     }
 
     if (alias && alias !== props.alias) {
       mutation.mutate(alias, {
         onSuccess() {
-          setError("");
+          setAliasError("");
           setSuccess("Available");
         },
         onError(error) {
-          setError(error.message);
+          setAliasError(error.message);
           setSuccess("");
         },
       });
@@ -43,12 +43,12 @@ export default function CustomAlias(props: Props) {
         type="text"
         placeholder={props.alias || "google"}
         className={`outline-none flex-grow p-3 rounded-full mx-72 border 
-        ${error && "border-red-400"} ${success && "border-green-400"}`}
+        ${aliasError && "border-red-400"} ${success && "border-green-400"}`}
         value={alias}
-        onChange={(e) => setAlias(e.target.value)}
+        onChange={(e) => setAlias(e.target.value.trim())}
       />
       <div className="text-md text-center text-green-600">{success}</div>
-      <div className="text-md text-center text-red-600">{error}</div>
+      <div className="text-md text-center text-red-600">{aliasError}</div>
     </>
   );
 }

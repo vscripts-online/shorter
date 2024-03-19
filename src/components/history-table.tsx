@@ -11,7 +11,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 import {
@@ -30,18 +29,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { IShortOutput } from "@/app/api/trpc/type";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { IShortOutput } from "@/server/type";
 import { trpc } from "@/utils/trpc";
-import { Delete, Ellipsis, Loader2, Underline } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
+import { Ellipsis, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Dispatch, SetStateAction, useMemo, useState } from "react";
+import { Button } from "./ui/button";
 import { toast } from "./ui/use-toast";
 
 interface DeleteDialogProps {
@@ -53,7 +53,8 @@ interface DeleteDialogProps {
 
 function DeleteDialog(props: DeleteDialogProps) {
   const mutation = trpc.deleteShort.useMutation();
-  const { refetch } = trpc.getHistory.useQuery();
+
+  const utils = trpc.useUtils();
 
   function handleDelete(e: React.MouseEvent) {
     e.preventDefault();
@@ -66,7 +67,23 @@ function DeleteDialog(props: DeleteDialogProps) {
           duration: 1000,
         });
         props.setOpen(false);
-        refetch();
+
+        utils.getHistory.setInfiniteData({}, (data) => {
+          if (!data) {
+            return {
+              pages: [],
+              pageParams: [],
+            };
+          }
+
+          return {
+            ...data,
+            pages: data.pages.map((page) => ({
+              ...page,
+              shorts: page.shorts.filter((x) => x._id !== props.value),
+            })),
+          };
+        });
       },
       onError(error, variables, context) {
         toast({
@@ -140,7 +157,7 @@ function ActionMenu(props: ActionMenuProps) {
       />
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
-          <div className="border border-neutral-400 rounded-full py-1 px-2">
+          <div className="border border-neutral-400 rounded-full py-1 px-2 cursor-pointer">
             <Ellipsis />
           </div>
         </DropdownMenuTrigger>
@@ -168,10 +185,28 @@ interface Props {
 }
 
 export default function HistoryTable(props: Props) {
-  const { data } = trpc.getHistory.useQuery();
+  const { data, fetchNextPage } = trpc.getHistory.useInfiniteQuery(
+    { cursor: 0 },
+    {
+      getNextPageParam: (lastPage, pages) => {
+        const sum = pages.reduce((acc, val) => acc + val.shorts.length, 0);
+        return sum;
+        // console.log("lastPage", lastPage);
+        // console.log("pages", pages);
+
+        // return 0;
+      },
+    }
+  );
   const timeAgo = new TimeAgo("en-US");
 
   const columns: ColumnDef<IShortOutput>[] = [
+    {
+      header: "#",
+      cell({ row }) {
+        return parseInt(row.id) + 1;
+      },
+    },
     {
       accessorKey: "createdAt",
       header: "Date",
@@ -219,11 +254,14 @@ export default function HistoryTable(props: Props) {
   ];
 
   const columnData = () => {
-    const filteredData = (
-      (data?.shorts as unknown as IShortOutput[]) || []
-    ).filter((x) => x && x._id !== props.data?._id);
+    const filteredData = (data?.pages.map((x) => x.shorts) || [])
+      .flat()
+      .filter((x) => x && x._id !== props.data?._id);
 
-    return [props.data, ...filteredData].filter((x) => x) as IShortOutput[];
+    const result = [props.data, ...filteredData].filter(
+      (x) => x
+    ) as IShortOutput[];
+    return result;
   };
 
   const cachedValue = useMemo(() => columnData(), [data]);
@@ -263,8 +301,8 @@ export default function HistoryTable(props: Props) {
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className={`${
-                    props.data?._id === row.original._id && "bg-purple-100"
-                  }`}
+                    props.data?._id === row.original._id && "bg-purple-200"
+                  } hover:bg-purple-100`}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -289,10 +327,14 @@ export default function HistoryTable(props: Props) {
           </TableBody>
         </Table>
       </div>
-      {data?.hasMore && (
-        <button className="border border-black p-2 px-5 bg-white text-black mt-2 rounded-full">
+      {data?.pages.at(-1)?.hasMore && (
+        <Button
+          variant="outline"
+          className="border border-black p-2 px-5 bg-white text-black mt-2 rounded-full"
+          onClick={() => fetchNextPage()}
+        >
           More
-        </button>
+        </Button>
       )}
     </>
   );

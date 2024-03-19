@@ -1,10 +1,10 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
-import Index from "../Index";
+import { IShortOutput } from "@/server/type";
 import { trpc } from "@/utils/trpc";
-import { IShortOutput } from "../api/trpc/type";
+import { useParams, useRouter } from "next/navigation";
 import { useContext, useEffect } from "react";
+import Index from "../Index";
 import { ShortContext } from "../providers/short.context";
 
 export default function Slug() {

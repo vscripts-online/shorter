@@ -2,8 +2,8 @@ import CurrentUpdatingShort from "@/components/current-updating-short";
 import CustomAlias from "@/components/custom-alias";
 import ShortInput from "@/components/short-input";
 import { trpc } from "@/utils/trpc";
-import HistoryTable from "../components/history-table";
-import { IShortOutput } from "./api/trpc/type";
+import HistoryTable from "@/components/history-table";
+import { IShortOutput } from "@/server/type";
 
 interface Props {
   data?: IShortOutput;
@@ -22,9 +22,7 @@ export default function Index(props: Props) {
       </div>
       {props.data && <CurrentUpdatingShort data={props.data} />}
       <div className="flex flex-col justify-center mt-20 ">
-        <div className="flex border rounded-full p-1 flex-grow mx-52">
-          <ShortInput data={props.data} />
-        </div>
+        <ShortInput data={props.data} />
         <div className="mt-10 flex flex-col">
           <CustomAlias alias={props.data?.alias} />
         </div>
