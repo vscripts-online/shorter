@@ -1,9 +1,8 @@
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { sessionProcedure as procedure, router } from "./_app";
-import { IShortOutput } from "../type";
+import { TRPCException, generateSlug } from "../helpers/helpers";
 import shortModel from "../model/short.model";
-import { generateSlug } from "../helpers";
+import { sessionProcedure as procedure, router } from "../trpc";
+import { IShortOutput } from "../type";
 
 const Short = shortModel();
 
@@ -21,30 +20,31 @@ export const shortRouter = router({
 
       const { redis } = opts.ctx;
 
-      let slug;
+      let slug = "";
 
       if (alias) {
-        const exists = await redis.get(`shorter:slug:${alias}`);
+        const exists = await redis.slugExists(alias);
         if (exists) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Alias not available",
-            cause: "alias",
-          });
+          throw new TRPCException(
+            "BAD_REQUEST",
+            "Alias not available",
+            "alias"
+          );
         }
       } else {
         slug = await generateSlug(redis);
       }
 
-      const short = new Short();
-      short.real_url = link;
-      short.alias = alias;
-      short.slug = alias || (slug as string);
-      short.user = user_id;
+      const short = new Short({
+        real_url: link,
+        alias: alias,
+        slug: alias || slug,
+        user: user_id,
+      });
 
       await short.save();
 
-      await redis.set(`shorter:slug:${alias || slug}`, JSON.stringify(short));
+      await redis.setSlug(alias || slug, short);
 
       return short as unknown as IShortOutput;
     }),

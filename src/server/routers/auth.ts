@@ -1,13 +1,22 @@
-import { TRPCError } from "@trpc/server";
 import bcrypt from "bcrypt";
 import { MongoServerError } from "mongodb";
-import crypto from "node:crypto";
 import { z } from "zod";
-import { redisClient } from "../database/redis";
+import {
+  TRPCException,
+  getCookieString,
+  newSession,
+  setSessionCookie,
+} from "../helpers/helpers";
 import userModel from "../model/user.model";
-import { publicProcedure as procedure, router } from "./_app";
+import { publicProcedure as procedure, router } from "../trpc";
 
 const User = userModel();
+
+const catchEmailConflict = (err: MongoServerError) => {
+  if (err.code === 11000) {
+    throw new TRPCException("CONFLICT", "An error occured, try again later");
+  }
+};
 
 export const authRouter = router({
   checkEmailRegistered: procedure.input(z.string()).mutation(async (opts) => {
@@ -15,45 +24,21 @@ export const authRouter = router({
 
     const user = await User.findOne({ email: input });
     if (user) {
-      throw new TRPCError({
-        code: "CONFLICT",
-        message: "Email already registered",
-      });
+      throw new TRPCException("CONFLICT", "Email already registered");
     }
+
     return true;
   }),
   register: procedure
     .input(z.object({ email: z.string(), password: z.string() }))
     .mutation(async (opts) => {
       const { input, ctx } = opts;
-      const User = userModel();
 
-      const user = new User();
-      user.email = input.email;
-      user.password = input.password;
-      await user.save().catch((err: MongoServerError) => {
-        if (err.code === 11000) {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "An error occured, try again later",
-          });
-        }
-      });
+      const user = new User({ email: input.email, password: input.password });
+      await user.save().catch(catchEmailConflict);
 
-      const session = crypto.randomBytes(16).toString("base64url");
-
-      const redis = await redisClient();
-      await redis.set(
-        `shorter:session:${user._id}:${session}`,
-        JSON.stringify(user)
-      );
-
-      const _session = user.id + "|" + session;
-      ctx.resHeaders.set(
-        "set-cookie",
-        `session=${_session}; httpOnly;`
-        // `session=${_session}; httpOnly; secure;`
-      );
+      const session = await newSession(opts.ctx.redis, user);
+      setSessionCookie(ctx.resHeaders, session);
 
       return true;
     }),
@@ -61,38 +46,19 @@ export const authRouter = router({
     .input(z.object({ email: z.string().email(), password: z.string() }))
     .mutation(async (opts) => {
       const { input, ctx } = opts;
-      const User = userModel();
 
       const user = await User.findOne({ email: input.email });
       if (!user) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "User not found",
-        });
+        throw new TRPCException("UNAUTHORIZED", "User not found");
       }
 
       const valid = await bcrypt.compare(input.password, user.password);
       if (!valid) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Wrong Password",
-        });
+        throw new TRPCException("UNAUTHORIZED", "Wrong Password");
       }
 
-      const session = crypto.randomBytes(16).toString("base64url");
-
-      const redis = await redisClient();
-      await redis.set(
-        `shorter:session:${user._id}:${session}`,
-        JSON.stringify(user)
-      );
-
-      const _session = user.id + "|" + session;
-      ctx.resHeaders.set(
-        "set-cookie",
-        `session=${_session}; httpOnly;`
-        // `session=${_session}; httpOnly; secure;`
-      );
+      const session = await newSession(opts.ctx.redis, user);
+      setSessionCookie(ctx.resHeaders, session);
 
       return true;
     }),

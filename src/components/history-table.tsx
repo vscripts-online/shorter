@@ -208,10 +208,10 @@ export default function HistoryTable(props: Props) {
       },
     },
     {
-      accessorKey: "createdAt",
+      accessorKey: "updatedAt",
       header: "Date",
       cell({ row }) {
-        const value = row.getValue("createdAt") as string;
+        const value = row.getValue("updatedAt") as string;
         return timeAgo.format(new Date(value));
       },
     },

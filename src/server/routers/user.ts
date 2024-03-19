@@ -1,11 +1,12 @@
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import {
+  TRPCException,
+  getCookieString,
+  setSessionCookie,
+} from "../helpers/helpers";
 import shortModel from "../model/short.model";
+import { protectedProcedure as procedure, router } from "../trpc";
 import { IShortOutput } from "../type";
-import { protectedProcedure as procedure, router } from "./_app";
-import { RedisClient } from "../database/redis";
-import { nanoid } from "nanoid";
-import { generateSlug } from "../helpers";
 
 const Short = shortModel();
 
@@ -19,10 +20,7 @@ export const userRouter = router({
     const user = opts.ctx.user;
     const short = await Short.findOne({ user: user._id, _id: input });
     if (!short) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Short not found",
-      });
+      throw new TRPCException("NOT_FOUND", "Short not found");
     }
 
     return short as unknown as IShortOutput;
@@ -31,11 +29,10 @@ export const userRouter = router({
     .input(z.object({ cursor: z.number().nullish() }))
     .query(async (opts) => {
       const user_id = opts.ctx.user?._id;
-      const Short = shortModel();
       const data = await Short.find({ user: user_id })
         .skip(opts.input.cursor || 0)
         .limit(21)
-        .sort("-createdAt");
+        .sort("-updatedAt");
 
       const hasMore = data.length > 20;
       const shorts = data.slice(0, 20) as unknown as IShortOutput[];
@@ -44,18 +41,16 @@ export const userRouter = router({
     }),
   deleteShort: procedure.input(z.string()).mutation(async (opts) => {
     const { input } = opts;
-    const Short = shortModel();
     const user = opts.ctx.user;
     const short = await Short.findOneAndDelete({
       user: user._id,
       _id: input,
     });
     if (!short) {
-      throw new TRPCError({ code: "NOT_FOUND", message: "Short not found" });
+      throw new TRPCException("NOT_FOUND", "Short not found");
     }
 
-    const { redis } = await opts.ctx;
-    redis.del(`shorter:slug:${short.slug}`);
+    await opts.ctx.redis.deleteSlug(short.slug);
 
     return true;
   }),
@@ -68,42 +63,34 @@ export const userRouter = router({
       })
     )
     .mutation(async (opts) => {
-      const Short = shortModel();
       const { _id, link, alias } = opts.input;
       const user = opts.ctx.user;
 
-      let slug;
-
       const { redis } = await opts.ctx;
       if (alias) {
-        const exists = await redis.get(`shorter:slug:${alias}`);
+        const exists = await redis.slugExists(alias);
         if (exists) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Alias not available",
-            cause: "alias",
-          });
+          throw new TRPCException(
+            "BAD_REQUEST",
+            "Alias not available",
+            "alias"
+          );
         }
-      } else {
-        slug = await generateSlug(redis);
       }
 
       const short = await Short.findOne({ _id, user: user._id });
       if (!short) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Short not found",
-        });
+        throw new TRPCException("NOT_FOUND", "Short not found");
       }
 
       const old_short = short.toJSON();
-      short.slug = alias || (slug as string);
+      short.slug = alias || old_short.slug;
       short.alias = alias;
       short.real_url = link;
 
       await short.save();
 
-      await redis.del(`shorter:slug:${old_short.alias || old_short.slug}`);
+      await redis.deleteSlug(old_short.alias || old_short.slug);
 
       return short as unknown as IShortOutput;
     }),
@@ -111,13 +98,9 @@ export const userRouter = router({
     const user = opts.ctx.user;
     const session = opts.ctx.session;
 
-    const { redis } = await opts.ctx;
-    await redis.del(`shorter:session:${user._id}:${session}`);
+    await opts.ctx.redis.deleteSession(user._id, session);
 
-    opts.ctx.resHeaders.set(
-      "set-cookie",
-      `session=; expires=Thu, 01 Jan 1970 00:00:00 GMT;`
-    );
+    setSessionCookie(opts.ctx.resHeaders, "", true);
 
     return true;
   }),
