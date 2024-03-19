@@ -18,7 +18,7 @@ import { useContext } from "react";
 import { SignContext } from "./page";
 
 export default function Login() {
-  const { setRegister } = useContext(SignContext);
+  const { setSign } = useContext(SignContext);
   const router = useRouter();
 
   const formSchema = z.object({
@@ -97,7 +97,7 @@ export default function Login() {
           <div>or</div>
           <div
             className="text-sky-800 cursor-pointer underline"
-            onClick={setRegister}
+            onClick={() => setSign("register")}
           >
             Create an account
           </div>

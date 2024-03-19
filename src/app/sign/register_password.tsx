@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation";
 export default function RegisterPassword() {
   const router = useRouter();
 
-  const { setLogin, email } = useContext(SignContext);
+  const { setSign, email } = useContext(SignContext);
   const [error, setError] = useState("");
 
   const formSchema = z
@@ -102,7 +102,7 @@ export default function RegisterPassword() {
           <div>or</div>
           <div
             className="text-sky-800 cursor-pointer underline"
-            onClick={setLogin}
+            onClick={() => setSign("login")}
           >
             Sign in
           </div>

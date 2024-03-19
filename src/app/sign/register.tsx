@@ -17,12 +17,7 @@ import { SignContext } from "./page";
 import { trpc } from "@/utils/trpc";
 
 export default function Register() {
-  const {
-    setLogin,
-    setRegisterPassword,
-    updateEmail,
-    email: _email,
-  } = useContext(SignContext);
+  const { setSign, setEmail, email: _email } = useContext(SignContext);
 
   const formSchema = z.object({
     email: z.string().email(),
@@ -38,9 +33,9 @@ export default function Register() {
   const mutation = trpc.auth.checkEmailRegistered.useMutation();
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    updateEmail(values.email);
+    setEmail(values.email);
     mutation.mutate(values.email, {
-      onSuccess: () => setRegisterPassword(),
+      onSuccess: () => setSign("register_password"),
       onError(error, variables, context) {
         form.setError("email", { message: error.message });
       },
@@ -69,7 +64,7 @@ export default function Register() {
           <div>or</div>
           <div
             className="text-sky-800 cursor-pointer underline"
-            onClick={setLogin}
+            onClick={() => setSign("login")}
           >
             Sign in
           </div>

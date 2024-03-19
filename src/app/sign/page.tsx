@@ -1,19 +1,18 @@
 "use client";
 
-import { createContext, useState } from "react";
+import { Dispatch, SetStateAction, createContext, useState } from "react";
 import Login from "./login";
 import Register from "./register";
 import RegisterPassword from "./register_password";
 
+type SignEnum = "login" | "register" | "register_password";
+
 interface ISignContext {
-  setLogin: () => void;
-  setRegister: () => void;
-  setRegisterPassword: () => void;
+  setEmail: Dispatch<SetStateAction<string>>;
+  setSign: Dispatch<SetStateAction<SignEnum>>;
   updateEmail: (value: string) => void;
   email: string;
 }
-
-type SignEnum = "login" | "register" | "register_password";
 
 export const SignContext = createContext({} as ISignContext);
 
@@ -21,28 +20,10 @@ export default function Sign() {
   const [sign, setSign] = useState<SignEnum>("login");
   const [email, setEmail] = useState<string>("");
 
-  function setLogin() {
-    setSign("login");
-  }
-
-  function setRegister() {
-    setSign("register");
-  }
-
-  function setRegisterPassword() {
-    setSign("register_password");
-  }
-
-  function updateEmail(value: string) {
-    setEmail(value);
-  }
-
   const value = {
     sign,
-    setLogin,
-    setRegister,
-    setRegisterPassword,
-    updateEmail,
+    setSign,
+    setEmail,
     email,
   };
 
