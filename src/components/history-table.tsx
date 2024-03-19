@@ -52,7 +52,7 @@ interface DeleteDialogProps {
 }
 
 function DeleteDialog(props: DeleteDialogProps) {
-  const mutation = trpc.deleteShort.useMutation();
+  const mutation = trpc.user.deleteShort.useMutation();
 
   const utils = trpc.useUtils();
 
@@ -68,7 +68,7 @@ function DeleteDialog(props: DeleteDialogProps) {
         });
         props.setOpen(false);
 
-        utils.getHistory.setInfiniteData({}, (data) => {
+        utils.user.getHistory.setInfiniteData({}, (data) => {
           if (!data) {
             return {
               pages: [],
@@ -185,7 +185,7 @@ interface Props {
 }
 
 export default function HistoryTable(props: Props) {
-  const { data, fetchNextPage } = trpc.getHistory.useInfiniteQuery(
+  const { data, fetchNextPage } = trpc.user.getHistory.useInfiniteQuery(
     { cursor: 0 },
     {
       getNextPageParam: (lastPage, pages) => {

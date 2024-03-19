@@ -24,8 +24,8 @@ export default function ShortInput(props: Props) {
   } = useContext(ShortContext);
   const [value] = useDebounce(link, 300);
   const { toast } = useToast();
-  const createMutation = trpc.createShort.useMutation();
-  const updateMutation = trpc.updateShort.useMutation();
+  const createMutation = trpc.short.createShort.useMutation();
+  const updateMutation = trpc.user.updateShort.useMutation();
 
   useEffect(() => {
     checkLink();
@@ -49,8 +49,8 @@ export default function ShortInput(props: Props) {
       duration: 1000,
     });
 
-    utils.getShortById.refetch();
-    utils.getHistory.refetch();
+    utils.user.getShortById.refetch();
+    utils.user.getHistory.refetch();
     if (!props.data) {
       setLink("");
       setAlias("");

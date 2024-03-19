@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function Index(props: Props) {
-  const { data } = trpc.getMe.useQuery(undefined);
+  const { data } = trpc.user.getMe.useQuery(undefined);
 
   return (
     <div>

@@ -34,7 +34,7 @@ export default function Login() {
     },
   });
 
-  const mutation = trpc.login.useMutation();
+  const mutation = trpc.auth.login.useMutation();
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const { email, password } = values;

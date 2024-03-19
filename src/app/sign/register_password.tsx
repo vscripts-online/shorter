@@ -41,7 +41,7 @@ export default function RegisterPassword() {
     },
   });
 
-  const mutation = trpc.register.useMutation();
+  const mutation = trpc.auth.register.useMutation();
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const { confirm, password } = values;

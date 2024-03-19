@@ -1,10 +1,12 @@
 import * as redis from "redis";
 
-let client: redis.RedisClientType<
+export type RedisClient = redis.RedisClientType<
   redis.RedisDefaultModules,
   redis.RedisFunctions,
   redis.RedisScripts
 >;
+
+let client: RedisClient;
 
 export const redisClient = () => (client ? client : connectRedis());
 

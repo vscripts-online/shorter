@@ -4,8 +4,8 @@ import { useRouter } from "next/navigation";
 export default function Sign() {
   const router = useRouter();
 
-  const { data, refetch } = trpc.getMe.useQuery();
-  const mutation = trpc.logout.useMutation();
+  const { data, refetch } = trpc.user.getMe.useQuery();
+  const mutation = trpc.user.logout.useMutation();
 
   function onClick() {
     !data && router.push("/sign");

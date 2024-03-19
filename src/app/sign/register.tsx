@@ -35,7 +35,7 @@ export default function Register() {
     },
   });
 
-  const mutation = trpc.checkEmailRegistered.useMutation();
+  const mutation = trpc.auth.checkEmailRegistered.useMutation();
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     updateEmail(values.email);

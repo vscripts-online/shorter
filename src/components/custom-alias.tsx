@@ -14,7 +14,7 @@ export default function CustomAlias(props: Props) {
   const [success, setSuccess] = useState("");
   const [value] = useDebounce(alias, 300);
 
-  const mutation = trpc.availableSlug.useMutation();
+  const mutation = trpc.public.availableSlug.useMutation();
 
   useEffect(() => {
     if ((aliasError || success) && alias === "") {

@@ -12,9 +12,8 @@ export default function Slug() {
   const router = useRouter();
   const { setAlias, setLink } = useContext(ShortContext);
 
-  const { data, isLoading, isFetching, error } = trpc.getShortById.useQuery(
-    id as string
-  );
+  const { data, isLoading, isFetching, error } =
+    trpc.user.getShortById.useQuery(id as string);
 
   useEffect(() => {
     if (data) {
