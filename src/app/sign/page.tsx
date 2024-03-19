@@ -10,7 +10,6 @@ type SignEnum = "login" | "register" | "register_password";
 interface ISignContext {
   setEmail: Dispatch<SetStateAction<string>>;
   setSign: Dispatch<SetStateAction<SignEnum>>;
-  updateEmail: (value: string) => void;
   email: string;
 }
 
