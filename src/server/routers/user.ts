@@ -91,6 +91,7 @@ export const userRouter = router({
       await short.save();
 
       await redis.deleteSlug(old_short.alias || old_short.slug);
+      await redis.setSlug(short.slug, short);
 
       return short as unknown as IShortOutput;
     }),

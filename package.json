@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "server": "node server.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
@@ -25,6 +26,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "cookie": "^0.6.0",
+    "dotenv": "^16.4.5",
     "javascript-time-ago": "^2.5.9",
     "lucide-react": "^0.358.0",
     "mongoose": "^8.2.2",
