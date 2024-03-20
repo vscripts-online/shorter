@@ -10,8 +10,6 @@ interface Props {
 }
 
 export default function Index(props: Props) {
-  const { data } = trpc.user.getMe.useQuery(undefined);
-
   return (
     <div>
       <div className="flex flex-col items-center mt-20">
@@ -29,7 +27,7 @@ export default function Index(props: Props) {
       </div>
 
       <div className="flex flex-col items-center m-20">
-        {data && <HistorySection data={props.data} />}
+        <HistorySection data={props.data} />
       </div>
     </div>
   );

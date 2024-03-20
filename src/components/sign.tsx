@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 export default function Sign() {
   const router = useRouter();
 
-  const { data, refetch } = trpc.user.getMe.useQuery();
+  const { data } = trpc.user.getMe.useQuery();
   const mutation = trpc.user.logout.useMutation();
 
   function onClick() {

@@ -23,20 +23,6 @@ export const userRouter = router({
 
     return short as unknown as IShortOutput;
   }),
-  getHistory: procedure
-    .input(z.object({ cursor: z.number().nullish() }))
-    .query(async (opts) => {
-      const user_id = opts.ctx.user?._id;
-      const data = await Short.find({ user: user_id })
-        .skip(opts.input.cursor || 0)
-        .limit(21)
-        .sort("-updatedAt");
-
-      const hasMore = data.length > 20;
-      const shorts = data.slice(0, 20) as unknown as IShortOutput[];
-
-      return { hasMore, shorts };
-    }),
   deleteShort: procedure.input(z.string()).mutation(async (opts) => {
     const { input } = opts;
     const user = opts.ctx.user;
@@ -84,7 +70,7 @@ export const userRouter = router({
       short.slug = alias || old_short.slug;
       short.alias = alias;
       short.real_url = link;
-      short.__v;
+      short.tracking = opts.ctx.cookies.tracking;
 
       await short.save();
 
@@ -94,6 +80,7 @@ export const userRouter = router({
           clicked: old_short.clicked,
           real_url: old_short.real_url,
           slug: old_short.slug,
+          tracking: old_short.tracking,
         },
         short: old_short._id,
       });

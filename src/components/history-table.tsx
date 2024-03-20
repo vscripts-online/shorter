@@ -45,6 +45,13 @@ import { Dispatch, SetStateAction, useMemo, useState } from "react";
 import { Button } from "./ui/button";
 import { toast } from "./ui/use-toast";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 interface DeleteDialogProps {
   value: string;
   onDelete: () => void;
@@ -69,7 +76,7 @@ function DeleteDialog(props: DeleteDialogProps) {
         });
         props.setOpen(false);
 
-        utils.user.getHistory.setInfiniteData({}, (data) => {
+        utils.short.getHistory.setInfiniteData({}, (data) => {
           if (!data) {
             return {
               pages: [],
@@ -138,6 +145,9 @@ function ActionMenu(props: ActionMenuProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [modal, setModal] = useState(false);
+  const [tooltip, setTooltip] = useState(false);
+
+  const { data } = trpc.user.getMe.useQuery();
 
   function handleEdit() {
     router.push("/" + props.value);
@@ -157,11 +167,41 @@ function ActionMenu(props: ActionMenuProps) {
         setOpen={setModal}
       />
       <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger asChild>
-          <div className="border border-neutral-400 rounded-full py-1 px-2 cursor-pointer">
-            <Ellipsis />
-          </div>
-        </DropdownMenuTrigger>
+        <TooltipProvider delayDuration={0}>
+          <Tooltip open={data ? false : tooltip} onOpenChange={setTooltip}>
+            <TooltipTrigger onMouseEnter={(e) => e.preventDefault()} asChild>
+              <span className={`${!data && "cursor-not-allowed"}`}>
+                <DropdownMenuTrigger
+                  asChild
+                  className={`${!data && "pointer-events-none"}`}
+                >
+                  <div
+                    className={`border border-neutral-400 rounded-full py-1 px-2 cursor-pointer`}
+                  >
+                    <Ellipsis />
+                  </div>
+                </DropdownMenuTrigger>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Login required</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        {/* <span className={`${!data && "cursor-not-allowed"}`}>
+          <DropdownMenuTrigger
+            asChild
+            className={`${!data && "pointer-events-none"}`}
+          >
+            <div
+              className={`border border-neutral-400 rounded-full py-1 px-2 cursor-pointer`}
+            >
+              <Ellipsis />
+            </div>
+          </DropdownMenuTrigger>
+        </span> */}
+
         <DropdownMenuContent>
           <DropdownMenuItem
             className="cursor-pointer text-blue-900"
@@ -188,7 +228,7 @@ interface Props {
 
 export default function HistoryTable(props: Props) {
   const { data, fetchNextPage, isFetching } =
-    trpc.user.getHistory.useInfiniteQuery(
+    trpc.short.getHistory.useInfiniteQuery(
       { cursor: 0 },
       {
         getNextPageParam: (lastPage, pages) => {

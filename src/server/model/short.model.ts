@@ -7,6 +7,7 @@ export interface IShort {
   alias: string;
   slug: string;
   clicked: number;
+  tracking: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -16,8 +17,9 @@ const schema = new mongoose.Schema<IShort>(
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     real_url: String,
     clicked: { type: Number, default: 0 },
-    alias: String,
+    alias: { type: String, unique: true },
     slug: { type: String, unique: true },
+    tracking: { type: String },
     createdAt: Date,
     updatedAt: Date,
   },

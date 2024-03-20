@@ -4,7 +4,9 @@ import cookie from "cookie";
 import { nanoid } from "nanoid";
 import { IUser } from "../model/user.model";
 import { IUserOutput } from "../type";
-import { Redis } from "./redis";
+import shortModel from "../model/short.model";
+
+const Short = shortModel();
 
 export class TRPCException extends TRPCError {
   constructor(code: TRPC_ERROR_CODE_KEY, message?: string, cause?: unknown) {
@@ -38,4 +40,8 @@ export async function newSession(user: IUser) {
   const random = await global.redisClient.setSession(user);
   const session = user._id + "|" + random;
   return session;
+}
+
+export async function syncUnloggedShorts(user: string, tracking: string) {
+  await Short.updateMany({ user: { $exists: false }, tracking }, { user });
 }

@@ -5,6 +5,7 @@ import {
   TRPCException,
   newSession,
   setSessionCookie,
+  syncUnloggedShorts,
 } from "../helpers/helpers";
 import userModel from "../model/user.model";
 import { publicProcedure as procedure, router } from "../trpc";
@@ -36,6 +37,8 @@ export const authRouter = router({
       const user = new User({ email: input.email, password: input.password });
       await user.save().catch(catchEmailConflict);
 
+      await syncUnloggedShorts(user._id.toString(), ctx.cookies.tracking);
+
       const session = await newSession(user);
       setSessionCookie(ctx.resHeaders, session);
 
@@ -55,6 +58,8 @@ export const authRouter = router({
       if (!valid) {
         throw new TRPCException("UNAUTHORIZED", "Wrong Password");
       }
+
+      await syncUnloggedShorts(user._id.toString(), ctx.cookies.tracking);
 
       const session = await newSession(user);
       setSessionCookie(ctx.resHeaders, session);

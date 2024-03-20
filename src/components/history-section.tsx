@@ -12,7 +12,7 @@ export default function HistorySection(props: Props) {
   const [fetching, setFetching] = useState(false);
 
   const utils = trpc.useUtils();
-  const { refetch } = utils.user.getHistory;
+  const { refetch } = utils.short.getHistory;
 
   const onFetchChange = (fetch: boolean) => {
     setFetching(fetch);

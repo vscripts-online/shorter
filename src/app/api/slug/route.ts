@@ -29,16 +29,13 @@ export async function GET(request: NextRequest) {
 
   const request_headers = Object.fromEntries(request.headers.entries());
   const cookies = cookie.parse(request_headers.cookie || "");
-  if (!cookies.tracking) {
-    cookies.tracking = crypto.randomBytes(16).toString("base64url");
-    headers.set("Set-Cookie", `tracking=${cookies.tracking}`);
-  }
 
   const click = new Click({
     ip: request_headers["x-forwarded-for"],
     referer: request_headers["referer"],
     user_agent: request_headers["user-agent"],
     short: short._id,
+    tracking: cookies.tracking,
   });
 
   click.save();

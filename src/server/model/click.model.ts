@@ -6,6 +6,7 @@ export interface IClick {
   user_agent: string;
   referer: string;
   ip: string;
+  tracking: string;
 }
 
 const schema = new mongoose.Schema<IClick>(
@@ -14,6 +15,7 @@ const schema = new mongoose.Schema<IClick>(
     user_agent: String,
     referer: String,
     ip: String,
+    tracking: String,
   },
   { versionKey: false }
 );

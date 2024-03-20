@@ -50,7 +50,7 @@ export default function ShortInput(props: Props) {
     });
 
     utils.user.getShortById.refetch();
-    utils.user.getHistory.refetch();
+    utils.short.getHistory.refetch();
     if (!props.data) {
       setLink("");
       setAlias("");

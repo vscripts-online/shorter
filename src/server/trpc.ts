@@ -1,3 +1,4 @@
+import cookie from "cookie";
 import { initTRPC } from "@trpc/server";
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import superjson from "superjson";
@@ -13,7 +14,10 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
   await connectMongoose();
   await connectRedis();
 
-  return { ...opts };
+  const cookies_header = opts.req.headers.get("cookie");
+  const cookies = cookie.parse(cookies_header || "");
+
+  return { ...opts, cookies };
 };
 
 const t = initTRPC.context<typeof createContext>().create({
