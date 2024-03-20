@@ -3,7 +3,6 @@ import { MongoServerError } from "mongodb";
 import { z } from "zod";
 import {
   TRPCException,
-  getCookieString,
   newSession,
   setSessionCookie,
 } from "../helpers/helpers";
@@ -37,7 +36,7 @@ export const authRouter = router({
       const user = new User({ email: input.email, password: input.password });
       await user.save().catch(catchEmailConflict);
 
-      const session = await newSession(opts.ctx.redis, user);
+      const session = await newSession(user);
       setSessionCookie(ctx.resHeaders, session);
 
       return true;
@@ -57,7 +56,7 @@ export const authRouter = router({
         throw new TRPCException("UNAUTHORIZED", "Wrong Password");
       }
 
-      const session = await newSession(opts.ctx.redis, user);
+      const session = await newSession(user);
       setSessionCookie(ctx.resHeaders, session);
 
       return true;

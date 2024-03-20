@@ -1,14 +1,9 @@
 import * as redis from "redis";
+import { Redis } from "../helpers/redis";
 
-export type RedisClient = redis.RedisClientType<
-  redis.RedisDefaultModules,
-  redis.RedisFunctions,
-  redis.RedisScripts
->;
-
-let client: RedisClient;
-
-export const redisClient = () => (client ? client : connectRedis());
+declare global {
+  var redisClient: Redis;
+}
 
 async function connectRedis() {
   const uri = process.env.REDIS_URI;
@@ -16,22 +11,19 @@ async function connectRedis() {
     throw new Error("REDIS_URI Not found at .env file");
   }
 
-  if (!client?.isOpen) {
-    if (client) {
-      console.log("client.isReady", client.isReady);
-    }
-
-    client = await redis
-      .createClient({
-        url: uri,
-      })
-      .on("error", (err) => console.log("Redis Client Error", err))
-      .connect();
-
-    console.log("connected to redis");
+  if (global.redisClient?.client.isReady) {
+    return global.redisClient;
   }
+  const client = await redis
+    .createClient({ url: uri })
+    .on("error", (err) => console.log("Redis Client Error", err))
+    .connect();
 
-  return client;
+  console.log("connected to redis");
+
+  global.redisClient = new Redis(client);
+
+  return global.redisClient;
 }
 
 export default connectRedis;

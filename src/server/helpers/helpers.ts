@@ -12,42 +12,30 @@ export class TRPCException extends TRPCError {
   }
 }
 
-export async function generateSlug(redis: Redis): Promise<string> {
+export async function generateSlug(): Promise<string> {
   const slug = nanoid(6);
-  const exists = await redis.slugExists(slug);
-  return exists ? await generateSlug(redis) : slug;
+  const exists = await global.redisClient.slugExists(slug);
+  return exists ? await generateSlug() : slug;
 }
 
-export async function getUserBySession(redis: Redis, cookies: string) {
+export async function getUserBySession(cookies: string) {
   const { session: _session } = cookie.parse(cookies);
   const [_id, session] = _session.split("|");
-  const user = await redis.getSession(_id, session);
+  const user = await global.redisClient.getSession(_id, session);
   if (!user) {
     throw new Error("User not found");
   }
   return { _id, session, user: JSON.parse(String(user)) as IUserOutput };
 }
 
-export function getCookieString(
-  session: string,
-  expire = false
-): [string, string] {
-  const expires = expire ? "expires=Thu, 01 Jan 1970 00:00:00 GMT;" : "";
-  return ["set-cookie", `session=${session}; httpOnly; ${expires}`];
-}
-
-export function setSessionCookie(
-  resHeaders: Headers,
-  session: string,
-  expire = false
-) {
-  const expires = expire ? "expires=Thu, 01 Jan 1970 00:00:00 GMT;" : "";
+export function setSessionCookie(resHeaders: Headers, session: string) {
+  const expires = !session ? "expires=Thu, 01 Jan 1970 00:00:00 GMT;" : "";
   const cookie = `session=${session}; httpOnly; ${expires}`;
   resHeaders.set("set-cookie", cookie);
 }
 
-export async function newSession(redis: Redis, user: IUser) {
-  const random = await redis.setSession(user);
+export async function newSession(user: IUser) {
+  const random = await global.redisClient.setSession(user);
   const session = user._id + "|" + random;
   return session;
 }

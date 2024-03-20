@@ -74,3 +74,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes reverse-spin {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.reverse-spin {
+  animation: reverse-spin 1s linear infinite;
+}

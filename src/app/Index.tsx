@@ -1,9 +1,9 @@
 import CurrentUpdatingShort from "@/components/current-updating-short";
 import CustomAlias from "@/components/custom-alias";
+import HistorySection from "@/components/history-section";
 import ShortInput from "@/components/short-input";
-import { trpc } from "@/utils/trpc";
-import HistoryTable from "@/components/history-table";
 import { IShortOutput } from "@/server/type";
+import { trpc } from "@/utils/trpc";
 
 interface Props {
   data?: IShortOutput;
@@ -29,12 +29,7 @@ export default function Index(props: Props) {
       </div>
 
       <div className="flex flex-col items-center m-20">
-        {data && (
-          <>
-            <div className="mb-2">Shorting History</div>
-            <HistoryTable data={props.data} />
-          </>
-        )}
+        {data && <HistorySection data={props.data} />}
       </div>
     </div>
   );

@@ -18,12 +18,10 @@ export const shortRouter = router({
       const user_id = opts.ctx.user?._id;
       const { link, alias } = opts.input;
 
-      const { redis } = opts.ctx;
-
       let slug = "";
 
       if (alias) {
-        const exists = await redis.slugExists(alias);
+        const exists = await global.redisClient.slugExists(alias);
         if (exists) {
           throw new TRPCException(
             "BAD_REQUEST",
@@ -32,7 +30,7 @@ export const shortRouter = router({
           );
         }
       } else {
-        slug = await generateSlug(redis);
+        slug = await generateSlug();
       }
 
       const short = new Short({
@@ -44,7 +42,7 @@ export const shortRouter = router({
 
       await short.save();
 
-      await redis.setSlug(alias || slug, short);
+      await global.redisClient.setSlug(alias || slug, short);
 
       return short as unknown as IShortOutput;
     }),

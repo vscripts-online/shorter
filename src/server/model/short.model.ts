@@ -4,8 +4,7 @@ export interface IShort {
   _id: mongoose.Schema.Types.ObjectId;
   user: mongoose.Schema.Types.ObjectId;
   real_url: string;
-  url: string;
-  alias?: string;
+  alias: string;
   slug: string;
   clicked: number;
   createdAt: Date;
@@ -17,13 +16,12 @@ const schema = new mongoose.Schema<IShort>(
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     real_url: String,
     clicked: { type: Number, default: 0 },
-    url: String,
     alias: String,
     slug: { type: String, unique: true },
     createdAt: Date,
     updatedAt: Date,
   },
-  { timestamps: true }
+  { timestamps: true, optimisticConcurrency: true }
 );
 
 const name = "Short";

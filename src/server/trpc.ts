@@ -8,13 +8,12 @@ import {
   getUserBySession,
   setSessionCookie,
 } from "./helpers/helpers";
-import { Redis } from "./helpers/redis";
 
 export const createContext = async (opts: FetchCreateContextFnOptions) => {
   await connectMongoose();
-  const redis = await connectRedis();
+  await connectRedis();
 
-  return { ...opts, redis: new Redis(redis) };
+  return { ...opts };
 };
 
 const t = initTRPC.context<typeof createContext>().create({
@@ -28,7 +27,7 @@ export const publicProcedure = t.procedure;
 const parseSession = t.middleware(async (opts) => {
   try {
     const cookies = opts.ctx.req.headers.get("cookie");
-    const { session, user } = await getUserBySession(opts.ctx.redis, cookies!);
+    const { session, user } = await getUserBySession(cookies!);
     return opts.next({ ctx: { user, session } });
   } catch (error) {
     return opts.next({});

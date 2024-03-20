@@ -1,6 +1,7 @@
 import TimeAgo from "javascript-time-ago";
 import en from "javascript-time-ago/locale/en";
 TimeAgo.addDefaultLocale(en);
+const timeAgo = new TimeAgo("en-US");
 
 import {
   AlertDialog,
@@ -182,23 +183,22 @@ function ActionMenu(props: ActionMenuProps) {
 
 interface Props {
   data?: IShortOutput;
+  onFetchChange: (data: boolean) => void;
 }
 
 export default function HistoryTable(props: Props) {
-  const { data, fetchNextPage } = trpc.user.getHistory.useInfiniteQuery(
-    { cursor: 0 },
-    {
-      getNextPageParam: (lastPage, pages) => {
-        const sum = pages.reduce((acc, val) => acc + val.shorts.length, 0);
-        return sum;
-        // console.log("lastPage", lastPage);
-        // console.log("pages", pages);
+  const { data, fetchNextPage, isFetching } =
+    trpc.user.getHistory.useInfiniteQuery(
+      { cursor: 0 },
+      {
+        getNextPageParam: (lastPage, pages) => {
+          const sum = pages.reduce((acc, val) => acc + val.shorts.length, 0);
+          return sum;
+        },
+      }
+    );
 
-        // return 0;
-      },
-    }
-  );
-  const timeAgo = new TimeAgo("en-US");
+  props.onFetchChange(isFetching);
 
   const columns: ColumnDef<IShortOutput>[] = [
     {
@@ -224,7 +224,7 @@ export default function HistoryTable(props: Props) {
         return (
           <Link
             className={`${alias && "text-red-700"} underline`}
-            href={"https://httpbin.org/anything/" + value}
+            href={`${process.env.NEXT_PUBLIC_REDIRECT_HOST}/${value}`}
             target="blank"
           >
             {value}
@@ -254,13 +254,16 @@ export default function HistoryTable(props: Props) {
   ];
 
   const columnData = () => {
-    const filteredData = (data?.pages.map((x) => x.shorts) || [])
-      .flat()
-      .filter((x) => x && x._id !== props.data?._id);
+    const pages_data = (data?.pages.map((x) => x.shorts) || []).flat();
 
-    const result = [props.data, ...filteredData].filter(
+    const current_data = pages_data.find((x) => x && x._id === props.data?._id);
+
+    const filtered_data = pages_data.filter((x) => x._id !== props.data?._id);
+
+    const result = [current_data, ...filtered_data].filter(
       (x) => x
     ) as IShortOutput[];
+
     return result;
   };
 
