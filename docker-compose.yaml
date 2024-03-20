@@ -1,0 +1,16 @@
+version: "3"
+
+services:
+  app:
+    restart: always
+    build:
+      context: .
+    environment:
+      MONGO_URI: mongodb://srv-captain--mongo:27017
+      MONGO_DBNAME: shorter
+      REDIS_URI: redis://:123456@srv-captain--redis:6379
+      NEXT_PUBLIC_REDIRECT_HOST: http://redirect.vscripts.online
+    ports:
+      - 3000:3000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

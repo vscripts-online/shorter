@@ -7,6 +7,8 @@ import { NextRequest, NextResponse as Response } from "next/server";
 import clickModel from "@/server/model/click.model";
 import shortModel from "@/server/model/short.model";
 
+export const dynamic = "force-dynamic";
+
 const Click = clickModel();
 const Short = shortModel();
 
