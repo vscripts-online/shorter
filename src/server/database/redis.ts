@@ -14,9 +14,10 @@ async function connectRedis() {
   if (global.redisClient?.client.isReady) {
     return global.redisClient;
   }
+  console.log("Redis connecting to", uri);
   const client = await redis
     .createClient({ url: uri })
-    .on("error", (err) => console.log("Redis Client Error", err))
+    .on("error", (err) => console.log("Redis connection error", err))
     .connect();
 
   console.log("connected to redis");

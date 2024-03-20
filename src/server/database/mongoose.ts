@@ -8,8 +8,13 @@ async function connectMongoose() {
   }
 
   if (mongoose.connection.readyState !== 1) {
-    await mongoose.connect(uri, { dbName });
-    console.log("connected to mongo");
+    try {
+      console.log("Mongodb connecting to", uri, dbName);
+      await mongoose.connect(uri, { dbName });
+      console.log("connected to mongo");
+    } catch (error) {
+      console.log("Mongo connection error", error);
+    }
   }
 }
 
