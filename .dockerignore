@@ -1,2 +1,8 @@
 node_modules
 .next
+.env.production
+.dockerignore
+.git
+.gitignore
+Dockerfile
+docker-compose.yaml
