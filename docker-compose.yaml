@@ -6,7 +6,8 @@ services:
     build:
       context: .
       args:
-        - NEXT_PUBLIC_VERCEL_URL=shorter.virtueer.com
+        - NEXT_PUBLIC_VERCEL_URL=shorter.vscripts.online
+        - NEXT_PUBLIC_REDIRECT_HOST=http://redirect.vscripts.online
     environment:
       MONGO_URI: mongodb://srv-captain--mongo:27017
       MONGO_DBNAME: shorter
