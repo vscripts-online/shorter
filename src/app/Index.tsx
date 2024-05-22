@@ -3,7 +3,6 @@ import CustomAlias from "@/components/custom-alias";
 import HistorySection from "@/components/history-section";
 import ShortInput from "@/components/short-input";
 import { IShortOutput } from "@/server/type";
-import { trpc } from "@/utils/trpc";
 
 interface Props {
   data?: IShortOutput;
@@ -22,7 +21,7 @@ export default function Index(props: Props) {
       <div className="flex flex-col justify-center mt-20 ">
         <ShortInput data={props.data} />
         <div className="mt-10 flex flex-col">
-          <CustomAlias alias={props.data?.alias} />
+          <CustomAlias alias={props.data?.slug} />
         </div>
       </div>
 

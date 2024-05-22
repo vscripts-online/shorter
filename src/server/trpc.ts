@@ -7,7 +7,6 @@ import connectRedis from "./database/redis";
 import {
   TRPCException,
   getUserBySession,
-  setSessionCookie,
 } from "./helpers/helpers";
 
 export const createContext = async (opts: FetchCreateContextFnOptions) => {
@@ -43,10 +42,8 @@ export const sessionProcedure = t.procedure.use(parseSession);
 export const protectedProcedure = t.procedure
   .use(parseSession)
   .use(async (opts) => {
-    if (opts.ctx.user) {
+    if (opts.ctx.user)
       return opts.next();
-    }
 
-    setSessionCookie(opts.ctx.resHeaders, "");
     throw new TRPCException("UNAUTHORIZED");
   });

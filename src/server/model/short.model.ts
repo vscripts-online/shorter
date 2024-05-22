@@ -2,9 +2,8 @@ import * as mongoose from "mongoose";
 
 export interface IShort {
   _id: mongoose.Schema.Types.ObjectId;
-  user: mongoose.Schema.Types.ObjectId;
+  user: number;
   real_url: string;
-  alias: string;
   slug: string;
   clicked: number;
   tracking: string;
@@ -14,10 +13,9 @@ export interface IShort {
 
 const schema = new mongoose.Schema<IShort>(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    user: Number,
     real_url: String,
     clicked: { type: Number, default: 0 },
-    alias: { type: String, unique: true },
     slug: { type: String, unique: true },
     tracking: { type: String },
     createdAt: Date,

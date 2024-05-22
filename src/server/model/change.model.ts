@@ -2,8 +2,7 @@ import * as mongoose from "mongoose";
 import { IShort } from "./short.model";
 
 export type ShortHistory = Pick<
-  IShort,
-  "alias" | "clicked" | "real_url" | "slug" | "tracking"
+  IShort, | "clicked" | "real_url" | "slug" | "tracking"
 >;
 
 export interface IChange {

@@ -8,11 +8,13 @@ services:
       args:
         - NEXT_PUBLIC_VERCEL_URL=shorter.vscripts.online
         - NEXT_PUBLIC_REDIRECT_HOST=http://redirect.vscripts.online
+        - NEXT_PUBLIC_AUTH_HOST=http://vscripts.online
     environment:
       MONGO_URI: mongodb://srv-captain--mongo:27017
       MONGO_DBNAME: shorter
       REDIS_URI: redis://:123456@srv-captain--redis:6379
       NEXT_PUBLIC_REDIRECT_HOST: http://redirect.vscripts.online
+      NEXT_PUBLIC_AUTH_HOST: http://vscripts.online
     expose:
       - "3000"
     extra_hosts:

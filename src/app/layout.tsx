@@ -1,5 +1,5 @@
 import Header from "@/components/header";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
 import { TrpcProvider } from "@/utils/trpc-provider";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -24,7 +24,7 @@ export default function RootLayout({
         <TrpcProvider>
           <Header />
           <Providers>{children}</Providers>
-          <Toaster />
+          <Toaster richColors />
         </TrpcProvider>
       </body>
     </html>

@@ -1,45 +1,39 @@
-import { trpc } from "@/utils/trpc";
+import { AuthAPI, useAuthAPIQuery } from "@/auth";
+import AuthDropdown from "./auth-dropdown";
+import { Button } from "./ui/button";
+import { UserProfile } from "./user-profile";
 import { useRouter } from "next/navigation";
+import { generateAuthCallbackURL } from "@/utils";
+
+export const SignButton = ({ onClick }: { onClick?: () => any }) => {
+  return (
+    <Button
+      variant="shine"
+      onClick={onClick}
+      className="bg-sky-400 from-sky-700 via-sky-700/50 to-sky-700"
+    >
+      Sign In
+    </Button>
+  );
+};
 
 export default function Sign() {
   const router = useRouter();
+  const { GetMe, ListUsers } = useAuthAPIQuery();
 
-  const { data } = trpc.user.getMe.useQuery();
-  const mutation = trpc.user.logout.useMutation();
+  const { data, error } = GetMe();
+  const { data: users } = ListUsers();
 
-  function onClick() {
-    !data && router.push("/sign");
+  if (!data && users && users.length > 0)
+    return <AuthDropdown trigger={<SignButton />} />;
+
+  if (!error && !!data) return <UserProfile />;
+
+  function redirectToLogin() {
+    const url = new URL(AuthAPI.loginURL);
+    url.searchParams.set("callback", generateAuthCallbackURL());
+    router.push(url.toString());
   }
 
-  function handleLogout() {
-    mutation.mutate(undefined, {
-      onSuccess() {
-        window.location.reload();
-      },
-    });
-  }
-
-  return (
-    <>
-      {!data && (
-        <button
-          className="py-2 px-5 rounded bg-rose-400 text-white"
-          onClick={onClick}
-        >
-          Sign
-        </button>
-      )}
-      {data && (
-        <div className="flex flex-col items-center">
-          <div className="text-sm mb-1">{data}</div>
-          <button
-            className="rounded py-1 px-3 bg-rose-400 text-white"
-            onClick={handleLogout}
-          >
-            Logout
-          </button>
-        </div>
-      )}
-    </>
-  );
+  return <SignButton onClick={redirectToLogin} />;
 }

@@ -1,7 +1,6 @@
 import crypto from "node:crypto";
 import * as redis from "redis";
 import { IShort } from "../model/short.model";
-import { IUser } from "../model/user.model";
 
 export type RedisClient = redis.RedisClientType<
   redis.RedisDefaultModules,
@@ -34,23 +33,5 @@ export class Redis {
 
   deleteSlug(slug: string) {
     return this.client.del(`${slug_namespace}:${slug}`);
-  }
-
-  getSession(_id: string, session: string) {
-    return this.client.get(`${session_namespace}:${_id}:${session}`);
-  }
-
-  async setSession(user: IUser) {
-    const random = crypto.randomBytes(16).toString("base64url");
-    const session = `${user._id}:${random}`;
-    await this.client.set(
-      `${session_namespace}:${session}`,
-      JSON.stringify(user)
-    );
-    return random;
-  }
-
-  deleteSession(_id: string, session: string) {
-    return this.client.del(`${session_namespace}:${_id}:${session}`);
   }
 }

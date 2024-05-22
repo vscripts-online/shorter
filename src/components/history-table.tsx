@@ -51,6 +51,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useAuthAPIQuery } from "@/auth";
 
 interface DeleteDialogProps {
   value: string;
@@ -147,7 +148,8 @@ function ActionMenu(props: ActionMenuProps) {
   const [modal, setModal] = useState(false);
   const [tooltip, setTooltip] = useState(false);
 
-  const { data } = trpc.user.getMe.useQuery();
+  const { GetMe } = useAuthAPIQuery();
+  const { data } = GetMe();
 
   function handleEdit() {
     router.push("/" + props.value);
@@ -258,16 +260,14 @@ export default function HistoryTable(props: Props) {
     {
       header: "Slug",
       cell({ row }) {
-        const alias = row.original.alias;
         const slug = row.original.slug;
-        const value = alias || slug;
         return (
           <Link
-            className={`${alias && "text-red-700"} underline`}
-            href={`${process.env.NEXT_PUBLIC_REDIRECT_HOST}/${value}`}
+            className={`${slug && "text-red-700"} underline`}
+            href={`${process.env.NEXT_PUBLIC_REDIRECT_HOST}/${slug}`}
             target="blank"
           >
-            {value}
+            {slug}
           </Link>
         );
       },

@@ -16,7 +16,7 @@ export const shortRouter = router({
       })
     )
     .mutation(async (opts) => {
-      const user_id = opts.ctx.user?._id;
+      const user_id = opts.ctx.user.id;
       const { link, alias } = opts.input;
 
       let slug = "";
@@ -51,7 +51,7 @@ export const shortRouter = router({
   getHistory: procedure
     .input(z.object({ cursor: z.number().nullish() }))
     .query(async (opts) => {
-      const user_id = opts.ctx.user?._id;
+      const user_id = opts.ctx.user?.id;
 
       const where: FilterQuery<IShort> = {};
 

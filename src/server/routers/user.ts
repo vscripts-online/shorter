@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { TRPCException, setSessionCookie } from "../helpers/helpers";
+import { TRPCException, generateSlug } from "../helpers/helpers";
 import shortModel from "../model/short.model";
 import changeModel from "../model/change.model";
 import { protectedProcedure as procedure, router } from "../trpc";
@@ -9,14 +9,10 @@ const Short = shortModel();
 const Change = changeModel();
 
 export const userRouter = router({
-  getMe: procedure.query(async (opts) => {
-    const user = opts.ctx.user;
-    return user.email;
-  }),
   getShortById: procedure.input(z.string()).query(async (opts) => {
     const { input } = opts;
     const user = opts.ctx.user;
-    const short = await Short.findOne({ user: user._id, _id: input });
+    const short = await Short.findOne({ user: user.id, _id: input });
     if (!short) {
       throw new TRPCException("NOT_FOUND", "Short not found");
     }
@@ -27,7 +23,7 @@ export const userRouter = router({
     const { input } = opts;
     const user = opts.ctx.user;
     const short = await Short.findOneAndDelete({
-      user: user._id,
+      user: user.id,
       _id: input,
     });
     if (!short) {
@@ -50,12 +46,12 @@ export const userRouter = router({
       const { _id, link, alias } = opts.input;
       const user = opts.ctx.user;
 
-      const short = await Short.findOne({ _id, user: user._id });
+      const short = await Short.findOne({ _id, user: user.id });
       if (!short) {
         throw new TRPCException("NOT_FOUND", "Short not found");
       }
 
-      if (alias !== short.alias) {
+      if (alias !== short.slug) {
         const exists = await global.redisClient.slugExists(alias);
         if (exists) {
           throw new TRPCException(
@@ -67,8 +63,9 @@ export const userRouter = router({
       }
 
       const old_short = short.toJSON();
-      short.slug = alias || old_short.slug;
-      short.alias = alias;
+      const slug = alias || await generateSlug()
+
+      short.slug = slug
       short.real_url = link;
       short.tracking = opts.ctx.cookies.tracking;
 
@@ -76,7 +73,6 @@ export const userRouter = router({
 
       const change = new Change({
         data: {
-          alias: old_short.alias,
           clicked: old_short.clicked,
           real_url: old_short.real_url,
           slug: old_short.slug,
@@ -86,19 +82,9 @@ export const userRouter = router({
       });
       change.save();
 
-      await global.redisClient.deleteSlug(old_short.alias || old_short.slug);
+      await global.redisClient.deleteSlug(old_short.slug);
       await global.redisClient.setSlug(short.slug, short);
 
       return short as unknown as IShortOutput;
     }),
-  logout: procedure.mutation(async (opts) => {
-    const user = opts.ctx.user;
-    const session = opts.ctx.session;
-
-    await global.redisClient.deleteSession(user._id, session);
-
-    setSessionCookie(opts.ctx.resHeaders, "");
-
-    return true;
-  }),
 });

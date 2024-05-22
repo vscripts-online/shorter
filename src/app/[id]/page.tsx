@@ -17,7 +17,7 @@ export default function Slug() {
 
   useEffect(() => {
     if (data) {
-      setAlias(data?.alias || "");
+      setAlias(data?.slug || "");
       setLink(data?.real_url || "");
     }
   }, [data]);
