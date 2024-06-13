@@ -3,7 +3,6 @@ import AuthDropdown from "./auth-dropdown";
 import { Button } from "./ui/button";
 import { UserProfile } from "./user-profile";
 import { useRouter } from "next/navigation";
-import { generateAuthCallbackURL } from "@/utils";
 
 export const SignButton = ({ onClick }: { onClick?: () => any }) => {
   return (
@@ -30,9 +29,7 @@ export default function Sign() {
   if (!error && !!data) return <UserProfile />;
 
   function redirectToLogin() {
-    const url = new URL(AuthAPI.loginURL);
-    url.searchParams.set("callback", generateAuthCallbackURL());
-    router.push(url.toString());
+    router.push(AuthAPI.loginURL);
   }
 
   return <SignButton onClick={redirectToLogin} />;

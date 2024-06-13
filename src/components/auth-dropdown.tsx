@@ -45,7 +45,6 @@ const AuthDropdown = (props: Props) => {
 
   function onAddAccount() {
     const url = new URL(AuthAPI.loginURL);
-    url.searchParams.set("callback", generateAuthCallbackURL());
     url.searchParams.set("add", "true");
     router.push(url.toString());
   }

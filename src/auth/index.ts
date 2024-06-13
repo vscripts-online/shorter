@@ -12,9 +12,15 @@ export interface IUser {
   has_password: boolean
 }
 
+export const AUTH_HOST = process.env.NEXT_PUBLIC_AUTH_HOST as string
+export const CLIENT_ID = process.env.NEXT_PUBLIC_AUTH_CLIENT_ID as string
+export const AUTH_CALLBACK = process.env.NEXT_PUBLIC_AUTH_CALLBACK as string
+
 export class AuthAPI {
   private static async request<T>(path: string, init: RequestInit = {}) {
-    const url = new URL(process.env.NEXT_PUBLIC_AUTH_HOST + path).toString()
+    const url = new URL(AUTH_HOST + path)
+
+    url.searchParams.set('client_id', CLIENT_ID)
 
     const response = await fetch(url, {
       ...init,
@@ -52,15 +58,32 @@ export class AuthAPI {
     return AuthAPI.request<{ status: IStatus, users: IUser[] }>('/api/user/list')
   }
 
-  static loginURL = new URL(process.env.NEXT_PUBLIC_AUTH_HOST + '/auth/login').toString()
+  public static get loginURL(): string {
+    const loginURL = new URL(AUTH_HOST + '/auth/login')
+    loginURL.searchParams.append('client_id', CLIENT_ID)
+    loginURL.searchParams.append('callback', AUTH_CALLBACK)
+    return loginURL.toString()
+  }
 }
 
 export const useAuthAPIQuery = () => ({
   SwitchUser: () => useMutation({
-    mutationFn: async (id: number) => (await AuthAPI.switchUser(id)).status
+    mutationFn: async (id: number) => {
+      const response = await AuthAPI.switchUser(id)
+      if (!response.status)
+        throw new Error('An error occured')
+
+      return response.status
+    }
   }),
   LogOut: () => useMutation({
-    mutationFn: async () => (await AuthAPI.logout()).status
+    mutationFn: async () => {
+      const response = await AuthAPI.logout()
+      if (!response.status)
+        throw new Error('An error occured')
+
+      return response.status
+    }
   }),
   ListUsers: () => useQuery({
     queryKey: ['authAPIQuery.ListUsers'],
@@ -68,6 +91,6 @@ export const useAuthAPIQuery = () => ({
   }),
   GetMe: () => useQuery({
     queryKey: ['authAPIQuery.GetMe'],
-    queryFn: async () => (await AuthAPI.me()).user
+    queryFn: async () => (await AuthAPI.me()).user || null
   }),
 })
