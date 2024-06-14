@@ -11,6 +11,7 @@ services:
         - NEXT_PUBLIC_AUTH_HOST=http://vscripts.online
         - NEXT_PUBLIC_AUTH_CALLBACK=http://localhost:3001
         - NEXT_PUBLIC_AUTH_CLIENT_ID=MpUaJDSnc7_GwDzPVSoBPQ
+        - NEXT_PUBLIC_AUTH_CLIENT_SECRET=kaUH0niYXe7b6WzWkzxHGOwThesAaM2xin0VrCWlXYY
     environment:
       MONGO_URI: mongodb://srv-captain--mongo:27017
       MONGO_DBNAME: shorter

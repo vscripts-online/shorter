@@ -23,9 +23,9 @@ export async function getUserBySession(cookies: string) {
   const { session } = cookie.parse(cookies);
 
   try {
-    const { status, user } = await AuthAPI.me()
+    const user = await AuthAPI.getMe(session)
 
-    if (!status)
+    if (!user)
       throw ''
 
     return { session, user }

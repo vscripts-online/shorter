@@ -4,13 +4,27 @@ export interface IStatus {
   status: boolean
 }
 
-export interface IUser {
-  id: number,
-  name: string,
-  email: string,
-  avatar: string,
-  has_password: boolean
+export interface IUserMetadata {
+  admin?: boolean;
+  total?: number;
+  used?: number;
 }
+
+export interface IAuthUser {
+  avatar: string;
+  email: string;
+  has_password: boolean;
+  id: number;
+  name: string;
+  role: 'USER' | 'ADMIN';
+  metadata?: IUserMetadata;
+}
+
+interface IGetMeResponse {
+  status: boolean;
+  user?: IAuthUser;
+}
+
 
 export const AUTH_HOST = process.env.NEXT_PUBLIC_AUTH_HOST as string
 export const CLIENT_ID = process.env.NEXT_PUBLIC_AUTH_CLIENT_ID as string
@@ -28,6 +42,25 @@ export class AuthAPI {
     })
 
     return response.json() as any as T
+  }
+
+  static async getMe(session: string) {
+    const url = new URL(AUTH_HOST + '/api/user/me');
+    url.searchParams.set('client_id', CLIENT_ID);
+
+    const response = await fetch(url, {
+      headers: {
+        cookie: `session=${session}`,
+      },
+    });
+
+    const data: IGetMeResponse = await response.json();
+
+    if (!data.status) {
+      return false;
+    }
+
+    return data.user;
   }
 
   static async switchUser(id: number) {
@@ -51,11 +84,11 @@ export class AuthAPI {
   }
 
   static async me() {
-    return AuthAPI.request<{ status: IStatus, user: IUser }>('/api/user/me')
+    return AuthAPI.request<{ status: IStatus, user: IAuthUser }>('/api/user/me',)
   }
 
   static async list() {
-    return AuthAPI.request<{ status: IStatus, users: IUser[] }>('/api/user/list')
+    return AuthAPI.request<{ status: IStatus, users: IAuthUser[] }>('/api/user/list')
   }
 
   public static get loginURL(): string {
