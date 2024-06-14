@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import AuthDropdown from "./auth-dropdown";
 
-import { useAuthAPIQuery } from "@/auth";
+import { AUTH_HOST, useAuthAPIQuery } from "@/auth";
 import { DropdownMenuItem, DropdownMenuSeparator } from "./ui/dropdown-menu";
 import UserAvatar from "./user-avatar";
 import { useQueryClient } from "@tanstack/react-query";
@@ -36,7 +36,9 @@ export const UserProfile = () => {
     <>
       <DropdownMenuItem>{data?.name}</DropdownMenuItem>
       <DropdownMenuSeparator />
-      <DropdownMenuItem onClick={() => router.push("/user/profile")}>
+      <DropdownMenuItem
+        onClick={() => router.push(AUTH_HOST + "/user/profile")}
+      >
         Settings
       </DropdownMenuItem>
       <DropdownMenuSeparator />
